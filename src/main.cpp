@@ -17,14 +17,14 @@
 #define SD_MODE     1
 #define TC_MODE     1
 #define LC_MODE     1
-// GOTTVERDAMMT I THOUGHT THIS WOULD BE EASY 
+
 // Pin #def's for the thermocouples
 #define SPI_CS1   10
 #define SPI_CS2   36
 #define SPI_CS3   37
 #define SPI_MOSI  11
 #define SPI_MISO  12
-#define SPI_SCK   13 //apparently after pulling the LED BUILTIN down, it still interferes with SPI_SCK pin
+#define SPI_SCK   13 
 
 #define DRDY 5
 
@@ -52,7 +52,7 @@ const char* thermocoupleAFileName {"Thermocouple A Data.txt"};
 const char* thermocoupleBFileName {"Thermocouple B Data.txt"};
 const char* thermocoupleCFileName {"Thermocouple C Data.txt"};
 File thermocoupleFile;
-std::array<Adafruit_MAX31856*, NUM_TC> arrayOfThermocouples {&thermocoupleA, &thermocoupleB}; // pointers or nah? should use pointers
+std::array<Adafruit_MAX31856*, NUM_TC> arrayOfThermocouples {&thermocoupleA, &thermocoupleB};
 #endif
 
 #if LC_MODE
@@ -70,7 +70,7 @@ std::array<HX711*, NUM_LC> arrayOfLoadCells {&loadCellA}; // pointers or nah?
 #if SD_MODE
 /*!
   @brief
-  Initialize SD card. BUILTIN LED will flash twice every 0.75s to notify that SD card could not be initialized.
+  Initialize SD card. Insert an SD card to see if it reinitializes.
   @return
   void.
 */
@@ -114,15 +114,13 @@ void initSD()
 #if SERIAL_MODE
   Serial.println("SD card initialized sucessfully");
 #endif
-  //pinMode(LED_BUILTIN, INPUT);
 }
 #endif
 
 #if TC_MODE
 /*!
   @brief
-  Initialize thermocouple. If thermocouple could not be initialized, 
-  BUILTIN LED will blink every 0.5s.
+  Initialize thermocouple and write stuff to a .txt file.
   @returns
   void
 */
@@ -192,17 +190,13 @@ void initThermocouple(Adafruit_MAX31856& thermocouple, max31856_thermocoupletype
   thermocoupleFile.println("Time(s), Temperature(C)");
   thermocoupleFile.close();
 #endif
-
-
-  //pinMode(LED_BUILTIN, INPUT);
 }
 #endif
 
 #if LC_MODE
 /*!
   @brief 
-  Initialize load cell. If load cell could not be initialized after 25s, 
-  BUILTIN LED will (or may) blink 3 times every 1.25 seconds.
+  Initialize load cell. If failed, it will try to reinitialize every 0.25 seconds for 25 seconds.
   @return
   void.
 */
@@ -278,9 +272,11 @@ void setup()
   //loadCellB.name = "B";
   //loadCellC.name = "C";
   loadCellA.saveFileName = loadCellAFileName;
-  //loadCellB.saveFileName = ;
-  //loadCellC.saveFileName = ;
+  //loadCellB.saveFileName = loadCellBFileName;
+  //loadCellC.saveFileName = loadCellCFileName;
   initLoadCell(loadCellA,LC_DOUT1,LC_SCK);
+  //initLoadCell(loadCellB,LC_DOUT2,LC_SCK);
+  //initLoadCell(loadCellC,LC_DOUT3,LC_SCK);
 #if SERIAL_MODE
   Serial.println("HX711 calibration sketch (Apply to all load cells, make sure they \
                   are the same model or something)");
@@ -313,18 +309,17 @@ void loop()
   currTime = millis();
   if (currTime - prevTime >= 1000.00/SAMPLES_PER_SECONDS)
   {
-  //might need to know the specific thermocouple and load cell////////////////////////////////////
 #if SERIAL_MODE
   Serial.println("--------------------------------");
   Serial.print("Time: ");
-  Serial.println((currTime-offset)/1000);
-  //Serial.println("s");
+  Serial.print((currTime-offset)/1000);
+  Serial.println("s");
 #endif
   // TC STUFF
 #if TC_MODE
   for (auto thermocouple_ptr: arrayOfThermocouples)
   { // Test with boiling water maybe?
-  digitalWrite(thermocouple_ptr->CS_PIN, LOW);
+    digitalWrite(thermocouple_ptr->CS_PIN, LOW);
 #if SD_MODE
     thermocoupleFile = SD.open(thermocouple_ptr->saveFileName.c_str(), FILE_WRITE);
     thermocoupleFile.print((currTime-offset)/1000);
@@ -352,7 +347,6 @@ void loop()
 
   for (auto loadCell_ptr: arrayOfLoadCells)
   {
-    
   loadCell_ptr->set_scale(calibrationFactor);
 #if SD_MODE
   loadCellFile = SD.open(loadCell_ptr->saveFileName.c_str(), FILE_WRITE);
