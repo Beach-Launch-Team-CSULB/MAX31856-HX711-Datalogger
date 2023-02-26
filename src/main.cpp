@@ -1,6 +1,7 @@
 /*!
   @file
-  This program allows you to log a thermocouple and a load cell using a teensy 4.1
+  This program allows you to log a thermocouple and a load cell using a teensy 4.1.
+  Keep in mind that 3rd-party sensor libraries are used and modified a bit. 
 */
 
 #include <Arduino.h>
@@ -32,6 +33,8 @@
 #define LC_DOUT2  4
 #define LC_DOUT3  5
 #define LC_SCK    27 // 27
+
+// These pin def's are for teensy 4.1. The pinout for the 3.6 might be different
 
 #define SAMPLES_PER_SECONDS 10
 #define NUM_TC 2
@@ -321,6 +324,7 @@ void loop()
 #if TC_MODE
   for (auto thermocouple_ptr: arrayOfThermocouples)
   { // Test with boiling water maybe?
+  digitalWrite(thermocouple_ptr->CS_PIN, LOW);
 #if SD_MODE
     thermocoupleFile = SD.open(thermocouple_ptr->saveFileName.c_str(), FILE_WRITE);
     thermocoupleFile.print((currTime-offset)/1000);
@@ -338,6 +342,7 @@ void loop()
     Serial.print("Cold Junction Temperature: ");
     Serial.print(thermocouple_ptr->readCJTemperature());
     Serial.println("C\r\n");
+    digitalWrite(thermocouple_ptr->CS_PIN, HIGH);
 #endif
   }
 #endif
