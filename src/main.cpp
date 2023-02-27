@@ -1,14 +1,28 @@
 /*!
   @file
   This program allows you to log a thermocouple and a load cell using a teensy 4.1.
-  Keep in mind that 3rd-party sensor libraries are used and modified a bit. 
-*/
 
+
+
+  Keep in mind that 3rd-party sensor libraries are used and modified a bit.
+  After adding those libraries to the project, replace the .cpp and .h files in those libraries with the
+  .cpp and .h files in the TCLCWomboCombo directory
+*/
+//Serial.printf("Load Cell %s Reading: %.2flbs \r\n", loadCell_ptr->name.c_str(), loadCell_ptr->get_units());
+//Serial.printf("Load Cell %s Reading: %.2flbs \r\n", loadCell_ptr->name.c_str(), loadCell_ptr->get_units());
+//Serial.printf("Load Cell %s Reading: %.2flbs \r\n", loadCell_ptr->name.c_str(), loadCell_ptr->get_units());
+//Serial.printf("Load Cell %s Reading: %.2flbs \r\n", loadCell_ptr->name.c_str(), loadCell_ptr->get_units());
+//Serial.printf("Load Cell %s Reading: %.2flbs \r\n", loadCell_ptr->name.c_str(), loadCell_ptr->get_units());
+//Serial.printf("Load Cell %s Reading: %.2flbs \r\n", loadCell_ptr->name.c_str(), loadCell_ptr->get_units());
+//Serial.printf("Load Cell %s Reading: %.2flbs \r\n", loadCell_ptr->name.c_str(), loadCell_ptr->get_units());
+//Serial.printf("Load Cell %s Reading: %.2flbs \r\n", loadCell_ptr->name.c_str(), loadCell_ptr->get_units());
+// try printf
 #include <Arduino.h>
 #include <Wire.h>
 #include <SPI.h>
 #include <SD.h>
 #include <array>
+#include <string>
 // 3rd-party libraries
 #include <Adafruit_MAX31856.h>
 #include <HX711.h>
@@ -32,7 +46,7 @@
 #define LC_DOUT1  3
 #define LC_DOUT2  4
 #define LC_DOUT3  5
-#define LC_SCK    27 // 27
+#define LC_SCK    27 
 
 // These pin def's are for teensy 4.1. The pinout for the 3.6 might be different
 
@@ -64,7 +78,7 @@ const char* loadCellAFileName {"Load Cell A Data.txt"};
 const char* loadCellBFileName {"Load Cell B Data.txt"};
 const char* loadCellCFileName {"Load Cell C Data.txt"};
 float calibrationFactor {-6500.0f};
-std::array<HX711*, NUM_LC> arrayOfLoadCells {&loadCellA}; // pointers or nah?
+std::array<HX711*, NUM_LC> arrayOfLoadCells {&loadCellA};
 #endif
 
 #if SD_MODE
@@ -87,12 +101,12 @@ void initSD()
     while (1)
     {
       // Try this: insert SD mid run and see if it breaks out of loop
-      Serial.println("Reinitializing");
+      Serial.println("Reinitializing...");
       if(SD.begin(BUILTIN_SDCARD))
       {
         break;
       }
-      delay(1500);
+      delay(1000);
     }
   }
 
@@ -196,7 +210,7 @@ void initThermocouple(Adafruit_MAX31856& thermocouple, max31856_thermocoupletype
 #if LC_MODE
 /*!
   @brief 
-  Initialize load cell. If failed, it will try to reinitialize every 0.25 seconds for 25 seconds.
+  Initialize load cell. If fails, it will try to reinitialize every 0.25 seconds up to 100 times
   @return
   void.
 */
@@ -208,7 +222,7 @@ void initLoadCell(HX711& loadCell, uint16_t DOUT, uint16_t SCK)
   {
     // this will execute after 25 seconds
 #if SERIAL_MODE
-    Serial.println("Timeout...");
+    Serial.println("Timedout...");
     Serial.print("Could not initialize load cell sensor");
     Serial.println(loadCell.name.c_str());
 #endif
@@ -232,6 +246,8 @@ void initLoadCell(HX711& loadCell, uint16_t DOUT, uint16_t SCK)
   SD.remove(loadCell.saveFileName.c_str());
   loadCellFile = SD.open(loadCell.saveFileName.c_str(), FILE_WRITE);
   loadCellFile.println("HX711 load cell sensor");
+  loadCellFile.print("Zero factor: ");
+  loadCellFile.println(zero_factor);
   loadCellFile.print("Time that it takes the IMU to begin measuring since powered on: ");
   loadCellFile.print(millis()/1000);
   loadCellFile.println("Time(s), Weight(lbs)");
@@ -344,7 +360,6 @@ void loop()
 
   // LC STUFF
 #if LC_MODE
-
   for (auto loadCell_ptr: arrayOfLoadCells)
   {
   loadCell_ptr->set_scale(calibrationFactor);
@@ -360,13 +375,16 @@ void loop()
   Serial.print(loadCell_ptr->name.c_str());
   Serial.print(" Reading: ");
   Serial.print(loadCell_ptr->get_units(), 2);
-  Serial.println(" lbs");
+  Serial.println("lbs");
+
+  //Serial.printf("Load Cell %s Reading: %.2flbs \r\n", loadCell_ptr->name.c_str(), loadCell_ptr->get_units());
+
 #endif
   }
 #if SERIAL_MODE
   Serial.print("Load cell calibration factor: ");
   Serial.println(calibrationFactor);
-  
+
   if (Serial.available() > 0)
     {
       char temp = Serial.read();
@@ -375,6 +393,17 @@ void loop()
       else if(temp == '-' || temp == 'z')
         calibrationFactor -= 10;
     }
+
+  /*
+  if (Serial.available() > 0)
+    {
+      byte buffer[8];
+      int64_t temp = Serial.readBytesUntil('\n',buffer,sizeof(buffer)); // seems to return the number of bytes,
+                                                                        // not the actual value.
+      calibrationFactor = temp;
+    }
+  */
+
 #endif
 #endif
   prevTime = currTime;
