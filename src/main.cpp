@@ -22,7 +22,7 @@
 #include <SPI.h>
 #include <SD.h>
 #include <array>
-#include <string>
+
 // 3rd-party libraries
 #include <Adafruit_MAX31856.h>
 #include <HX711.h>
@@ -134,7 +134,7 @@ void initSD()
 #if TC_MODE
 /*!
   @brief
-  Initialize thermocouple and write stuff to a .txt file.
+  Initialize and set up thermocouple and write stuff to a .txt file.
   @returns
   void
 */
@@ -210,7 +210,7 @@ void initThermocouple(Adafruit_MAX31856& thermocouple, max31856_thermocoupletype
 #if LC_MODE
 /*!
   @brief 
-  Initialize load cell. If fails, it will try to reinitialize every 0.25 seconds up to 100 times
+  Initialize and setup load cell. If fails, it will try to reinitialize every 0.25 seconds up to 100 times
   @return
   void.
 */
@@ -259,6 +259,9 @@ void initLoadCell(HX711& loadCell, uint16_t DOUT, uint16_t SCK)
 
 void setup()
 {
+  // Are these needed?
+  //Wire.begin();
+  //SPI.begin();
 #if SERIAL_MODE
   Serial.begin(115200);
   while (!Serial) delay(10);
@@ -303,7 +306,7 @@ void setup()
 #endif
 #endif
 
-  // Configuring CS pins for the thermocouples
+  // Configuring the CS pins for the thermocouples and deselect them
   pinMode(SPI_CS1, OUTPUT);
   pinMode(SPI_CS2, OUTPUT);
   //pinMode(SPI_CS3, OUTPUT);
@@ -321,7 +324,6 @@ void setup()
 
 void loop() 
 {
-  // put your main code here, to run repeatedly:
   currTime = millis();
   if (currTime - prevTime >= 1000.00/SAMPLES_PER_SECONDS)
   {
