@@ -5,18 +5,9 @@
 
 
   Keep in mind that 3rd-party sensor libraries are used and modified a bit.
-  After adding those libraries to the project, replace the .cpp and .h files in those libraries with the
+  After adding those libraries to the project via platformio, replace the .cpp and .h files in those libraries with the
   .cpp and .h files in the TCLCWomboCombo directory
 */
-//Serial.printf("Load Cell %s Reading: %.2flbs \r\n", loadCell_ptr->name.c_str(), loadCell_ptr->get_units());
-//Serial.printf("Load Cell %s Reading: %.2flbs \r\n", loadCell_ptr->name.c_str(), loadCell_ptr->get_units());
-//Serial.printf("Load Cell %s Reading: %.2flbs \r\n", loadCell_ptr->name.c_str(), loadCell_ptr->get_units());
-//Serial.printf("Load Cell %s Reading: %.2flbs \r\n", loadCell_ptr->name.c_str(), loadCell_ptr->get_units());
-//Serial.printf("Load Cell %s Reading: %.2flbs \r\n", loadCell_ptr->name.c_str(), loadCell_ptr->get_units());
-//Serial.printf("Load Cell %s Reading: %.2flbs \r\n", loadCell_ptr->name.c_str(), loadCell_ptr->get_units());
-//Serial.printf("Load Cell %s Reading: %.2flbs \r\n", loadCell_ptr->name.c_str(), loadCell_ptr->get_units());
-//Serial.printf("Load Cell %s Reading: %.2flbs \r\n", loadCell_ptr->name.c_str(), loadCell_ptr->get_units());
-// try printf
 #include <Arduino.h>
 #include <Wire.h>
 #include <SPI.h>
